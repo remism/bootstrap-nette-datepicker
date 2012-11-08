@@ -11,6 +11,11 @@ A nette-bootstrap-datepicker based on
 
     <link href="{$basePath}/css/datepicker.css" rel="stylesheet" media="screen">
     <script src="{$basePath}/js/bootstrap-datepicker.js"></script>
+4) Init datepickers
+
+		$(document).ready(function () {
+			$('div.input-append.date').datepicker();
+		});
 
 3) Add extension method to all form
 
@@ -21,7 +26,7 @@ Use the same date format as in original js component
         return $container[$name] = new DatePicker('dd.mm.yyyy', $label);
     });
 
-4) Usage
+5) Usage
 
     $form->addDatePicker('date', "Date")
 	  ->setClassName('date')//'date' defalt
@@ -37,5 +42,12 @@ Use the same date format as in original js component
 			DatePicker::DATE_RANGE,
 			'Entered date is not within allowed range.',
 			array(new DateTime('2012-10-02'),	new DateTime('2012-11-30')));
+
+6) Control generates something like this
+
+		<div class="input-append date" id="datepicker" data-date="12-02-2012" data-date-format="dd-mm-yyyy">
+    		<input type="text" value="12-02-2012">
+    		<span class="add-on"><i class="icon-calendar"></i></span>
+		</div>
 
 
