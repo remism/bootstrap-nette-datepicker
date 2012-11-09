@@ -1,11 +1,12 @@
 <?php
-
-class DatePicker extends Nette\Forms\Controls\BaseControl {
+namespace BeWeb\Components\Nette;
+class BootstrapDatePicker extends \Nette\Forms\Controls\BaseControl {
 	/** Range validator */
 	const DATE_RANGE = ':dateRange';
+	/** Default language */
+	const DEFAULT_LANGUAGE = 'en';
 	/** Defaut date format */
 	const W3C_DATE_FORMAT = 'yyyy-mm-dd';
-
 	/** Calendar viemode with month overview. */
 	const STARTVIEW_MONTH = 0;
 	/** Calendar viemode with year overview. */
@@ -18,9 +19,14 @@ class DatePicker extends Nette\Forms\Controls\BaseControl {
 	const TODAY_BUTTON_TRUE = true;
 	/** Calendar with today button which scrolls calendar to now and set value. */
 	const TODAY_BUTTON_LINKED = 'linked';
-
+	/** Icon left */
+	const BUTTON_STYLE_ICON_LEFT = 0;
+	/** Icon right */
+	const BUTTON_STYLE_ICON_RIGHT = 1;
+	/** No icon */
+	const BUTTON_STYLE_ICON_NONE = 2;
 	/** @var     string            class name	Class to detect inputs in DOM */
-	private $className = 'date';
+	private $className = 'bootstrapDatePicker';
 
 	/** @var     string						date format	Date format - d, m, M, y */
 	private $format = self::W3C_DATE_FORMAT;
@@ -32,7 +38,7 @@ class DatePicker extends Nette\Forms\Controls\BaseControl {
 	private $todayHighlight = false;
 
 	/** @var     number						Definition of first day of week. 0 for Sunday, 6 for Saturday */
-	private $weekStart = self::STARTVIEW_MONTH;
+	private $weekStart = 1;
 
 	/** @var     bool						Switch keyboard navigation on/off */
 	private $keyboardNavigation = true;
@@ -41,11 +47,18 @@ class DatePicker extends Nette\Forms\Controls\BaseControl {
 	private $todayButton = self::TODAY_BUTTON_FALSE;
 
 	/** @var     number					Startview mode */
-	private $startview = 1;
+	private $startview = self::STARTVIEW_MONTH;
 
+	/** @var     string					Language */
+	private $language = self::DEFAULT_LANGUAGE;
+
+	/** @var     number					Style */
+	private $buttonStyle = self::BUTTON_STYLE_ICON_RIGHT;
 
 	/** @var     string            value entered by user (unfiltered) */
 	protected $rawValue;
+
+
 
 	/**
 	 * Class constructor.
@@ -53,11 +66,21 @@ class DatePicker extends Nette\Forms\Controls\BaseControl {
 	 * @param    string            date format
 	 * @param    string            label
 	 */
-	public function __construct($format = self::W3C_DATE_FORMAT, $label = NULL)
+	public function __construct($format = self::W3C_DATE_FORMAT, $language=self::DEFAULT_LANGUAGE	, $label = NULL)
 	{
 		parent::__construct($label);
 		$this->control->type = 'text';
 		$this->format = $format;
+		$this->language = $language;
+	}
+
+	public static function register($format='yyyy-mm-dd', $language = 'en', $method = 'addDatePicker') {
+		$class = function_exists('get_called_class')?get_called_class():__CLASS__;
+		\Nette\Forms\Container::extensionMethod(
+			$method, function (\Nette\Forms\Container $container, $name, $label = NULL) use ($class, $format, $language) {
+				return $container[$name] = new $class($format, $language,  $label);
+			}
+		);
 	}
 
 	/**
@@ -147,13 +170,34 @@ class DatePicker extends Nette\Forms\Controls\BaseControl {
 		$this->todayButton = $todayButton;
 		return $this;
 	}
+	/**
+	 * Returns input button style.
+	 *
+	 * @return   number
+	 */
+	public function getInputButtonStyle()
+	{
+		return $this->buttonStyle;
+	}
 
+	/**
+	 * Sets input button style
+	 *
+	 * @param    number	BUTTON_STYLE_LEFT | BUTTON_STYLE_RIGHT | BUTTON_STYLE_NONE
+	 * @return   self
+	 */
+	public function setInputButtonStyle($buttonStyle = self::BUTTON_STYLE_ICON_RIGHT)
+	{
+		$this->buttonStyle = $buttonStyle;
+		return $this;
+	}
+	
 	/**
 	 * Returns true if calendar should highlight today column.
 	 *
 	 * @return   bool
 	 */
-	public function todayHighlight()
+	public function isTodayHighlight()
 	{
 		return $this->todayHighlight;
 	}
@@ -175,7 +219,7 @@ class DatePicker extends Nette\Forms\Controls\BaseControl {
 	 *
 	 * @return   bool
 	 */
-	public function autoclosed()
+	public function isAutoclosed()
 	{
 		return $this->autoclose;
 	}
@@ -217,31 +261,41 @@ class DatePicker extends Nette\Forms\Controls\BaseControl {
 	/**
 	 * Generates control's HTML element.
 	 *
-	 * @return   Nette\Web\Html
+	 * @return   \Nette\Web\Html
 	 */
 	public function getControl()
 	{
 		$control = parent::getControl();
 
-		$div = Nette\Utils\Html::el('div');
-		$div->addClass('input-append');
-		$div->addClass($this->className);
-		$div->data['date-autoclose'] = $this->autoclose?'true':'false';
-		$div->data['date-start-view'] = $this->startview;
-		$div->data['date-today-btn'] = $this->todayButton;
-		$div->data['date-today-highlight'] = $this->todayHighlight;
-		$div->data['date-weekstart'] = $this->weekStart;
-		$div->data['date-keyboard-navigation'] = $this->keyboardNavigation;
-		$div->data['date-format'] = $this->format;
-		$div->data['date-language'] = 'en';
+		$outter = $this->buttonStyle == self::BUTTON_STYLE_ICON_LEFT||$this->buttonStyle == self::BUTTON_STYLE_ICON_RIGHT?\Nette\Utils\Html::el('div'):$control;
+		if ($this->buttonStyle == self::BUTTON_STYLE_ICON_LEFT) {
+			$outter->addClass('input-prepend date');
+		} elseif($this->buttonStyle == self::BUTTON_STYLE_ICON_RIGHT) {
+			$outter->addClass('input-append date');
+		}
+		$outter->addClass($this->className);
+		$outter->data['date-autoclose'] = $this->autoclose?'true':'false';
+		$outter->data['date-start-view'] = $this->startview;
+		$outter->data['date-today-btn'] = $this->todayButton;
+		$outter->data['date-today-highlight'] = $this->todayHighlight;
+		$outter->data['date-weekstart'] = $this->weekStart;
+		$outter->data['date-keyboard-navigation'] = $this->keyboardNavigation;
+		$outter->data['date-format'] = $this->format;
+		$outter->data['date-language'] = $this->language;
 
 		list($min, $max) = $this->extractRangeRule($this->getRules());
-		if ($min !== NULL) $div->data['date-startdate'] = $min->format($this->toPhpFormat ($this->format));
-		if ($max !== NULL) $div->data['date-enddate'] = $max->format($this->toPhpFormat ($this->format));
-		if ($this->value) $div->data['date-date'] = $control->value = $this->value->format($this->toPhpFormat ($this->format));
-		$div->add($control);
-		$div->add('<span class="add-on"><i class="icon-calendar"></i></span>');
-		return $div;
+		if ($min !== NULL) $outter->data['date-startdate'] = $min->format($this->toPhpFormat ($this->format));
+		if ($max !== NULL) $outter->data['date-enddate'] = $max->format($this->toPhpFormat ($this->format));
+		if ($this->value) $outter->data['date-date'] = $control->value = $this->value->format($this->toPhpFormat ($this->format));
+		if ($this->buttonStyle == self::BUTTON_STYLE_ICON_LEFT) {
+			$outter->add('<span class="add-on"><i class="icon-calendar"></i></span>');
+			$outter->add($control);
+		} elseif($this->buttonStyle == self::BUTTON_STYLE_ICON_RIGHT) {
+			$outter->add($control);
+			$outter->add('<span class="add-on"><i class="icon-calendar"></i></span>');
+		}
+
+		return $outter;
 	}
 	/**
 	 * Sets DatePicker value.
@@ -252,7 +306,7 @@ class DatePicker extends Nette\Forms\Controls\BaseControl {
 	 */
 	public function setValue($value)
 	{
-		if ($value instanceof DateTime) {
+		if ($value instanceof \DateTime) {
 
 		} elseif (is_int($value)) { // timestamp
 
@@ -262,7 +316,7 @@ class DatePicker extends Nette\Forms\Controls\BaseControl {
 
 		} elseif (is_string($value)) {
 			$rawValue = $value;
-			$value = DateTime::createFromFormat($this->toPhpFormat($this->format), $value)->format('Y-m-d');
+			$value = \DateTime::createFromFormat($this->toPhpFormat($this->format), $value)->format('Y-m-d');
 
 		} else {
 			throw new \InvalidArgumentException();
@@ -271,7 +325,7 @@ class DatePicker extends Nette\Forms\Controls\BaseControl {
 		if ($value !== NULL) {
 			// DateTime constructor throws Exception when invalid input given
 			try {
-				$value = Nette\DateTime::from($value); // clone DateTime when given
+				$value = \Nette\DateTime::from($value); // clone DateTime when given
 			} catch (\Exception $e) {
 				$value = NULL;
 			}
@@ -328,7 +382,7 @@ class DatePicker extends Nette\Forms\Controls\BaseControl {
 	{
 		if (!$control instanceof self) throw new \InvalidStateException('Unable to validate ' . get_class($control) . ' instance.');
 		$value = $control->value;
-		return (empty($control->rawValue) || $value instanceof DateTime);
+		return (empty($control->rawValue) || $value instanceof \DateTime);
 	}
 
 	/**

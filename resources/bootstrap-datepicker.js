@@ -834,11 +834,20 @@
 							'</div>'+
 						'</div>';
 	Nette.validators.dateRange = function(elem, arg, val) {
-		var format = $(elem).parent('div.input-append').attr('data-date-format');
-		var language = $(elem).parent('div.input-append').attr('data-date-language') || 'en';
-		var min = DPGlobal.parseDate(arg[0].date.substr(0, 10), DPGlobal.parseFormat('yyyy-mm-dd'), language);
-		var max = DPGlobal.parseDate(arg[1].date.substr(0, 10), DPGlobal.parseFormat('yyyy-mm-dd'), language);
+		var format, language, min, max;
+		if (!(format = $(elem).attr('data-date-format'))) {
+			format = $(elem).parent('div.input-append').attr('data-date-format');
+		}
+		if(!(language = $(elem).attr('data-date-language'))) {
+			language = $(elem).parent('div.input-append').attr('data-date-language')|| 'en';
+		}
+		try {
+			min = DPGlobal.parseDate(arg[0].date.substr(0, 10), DPGlobal.parseFormat('yyyy-mm-dd'), language);
+		}catch(e){}
+		try {
+			max = DPGlobal.parseDate(arg[1].date.substr(0, 10), DPGlobal.parseFormat('yyyy-mm-dd'), language);
+		}catch(e){}
 		var date = DPGlobal.parseDate(val, DPGlobal.parseFormat(format), language);
-		return date >= min && date <= max;
+		return (min?date >= min:true) && (max?date <= max:true);
 	};
 }( window.jQuery );
