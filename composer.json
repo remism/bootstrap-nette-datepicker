@@ -18,9 +18,7 @@
         "kdyby/bootstrap-form-renderer": "v1.0.0"
     },
     "autoload":{
-        "psr-0":{
-            "BeWeb\\Components\\Nette\\BootstrapDatePicker":""
-        }
+        "classmap": ["BeWeb/Components/Nette/BootstrapDatePicker"]
     },
     "target-dir":"BeWeb/Components/Nette/BootstrapDatePicker"
 }
