@@ -57,7 +57,7 @@ or for default values ('yyyy-mm-dd', 'en', 'addDatePicker')
 
 		$form->addDatePicker('date', "Date")
 		->setClassName('myBetterClass')//'bootstrapDatePicker' defalt
-		->setAutoclose(true)//false default
+		->setAutoclose(true)//true default
 		->setTodayHighlight()//or setTodadyHighlight(true); false default
 		->setWeekStart(1)//0 for Sunday, 6 for Saturday; 1 is default
 		->setKeyboardNavigation()//or setKyeboardnavigation(true); true default
