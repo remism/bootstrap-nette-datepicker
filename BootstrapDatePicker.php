@@ -32,7 +32,7 @@ class BootstrapDatePicker extends \Nette\Forms\Controls\BaseControl {
 	private $format = self::W3C_DATE_FORMAT;
 
 	/** @var     bool							autoclose flag	If true calendar will be closed on click */
-	private $autoclose = false;
+	private $autoclose = true;
 
 	/** @var     bool							If true today column will be highlighted */
 	private $todayHighlight = false;
@@ -191,7 +191,7 @@ class BootstrapDatePicker extends \Nette\Forms\Controls\BaseControl {
 		$this->buttonStyle = $buttonStyle;
 		return $this;
 	}
-	
+
 	/**
 	 * Returns true if calendar should highlight today column.
 	 *
@@ -266,6 +266,8 @@ class BootstrapDatePicker extends \Nette\Forms\Controls\BaseControl {
 	public function getControl()
 	{
 		$control = parent::getControl();
+
+		if ($this->isDisabled()) $this->buttonStyle = self::BUTTON_STYLE_ICON_NONE;
 
 		$outter = $this->buttonStyle == self::BUTTON_STYLE_ICON_LEFT||$this->buttonStyle == self::BUTTON_STYLE_ICON_RIGHT?\Nette\Utils\Html::el('div'):$control;
 		if ($this->buttonStyle == self::BUTTON_STYLE_ICON_LEFT) {
